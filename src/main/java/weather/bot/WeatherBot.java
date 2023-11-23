@@ -1,11 +1,14 @@
 package weather.bot;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.Builder;
+import java.util.Properties;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
@@ -76,11 +79,22 @@ public class WeatherBot extends TelegramLongPollingBot {
 
     private Text getTodayWeather(Long who, Message msg) throws IOException, InterruptedException {
         if (msg.hasText()) {
+
+            String key = null;
+            try (InputStream input = new FileInputStream("local.properties")) {
+                Properties prop = new Properties();
+                prop.load(input);
+                key = prop.getProperty("weather_api_key");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder(
                     URI.create("https://api.weatherapi.com/v1/forecast.json?q=Chartres%2CFR&days=1"))
                     .header("aqi", "yes")
-                    .header("key", "0f691b51ae7640b1a38120600232311")
+                    .header("key", key)
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
 
