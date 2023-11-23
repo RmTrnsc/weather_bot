@@ -7,12 +7,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -96,16 +92,6 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
-
-            JSONObject obj = new JSONObject(response.body());
-            System.out.println(response.body());
-            System.out.println(obj);
-            JSONArray array = obj.getJSONArray("location");
-            List<String> list = new ArrayList<String>();
-
-            for (int i = 0; i < array.length(); i++) {
-                list.add(array.getJSONObject(i).getString("temp_c"));
-            }
         }
         return null;
     }
