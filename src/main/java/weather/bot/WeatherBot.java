@@ -7,9 +7,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpRequest.Builder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -42,15 +45,11 @@ public class WeatherBot extends TelegramLongPollingBot {
                 try {
                     getTodayWeather(id, msg);
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
         }
-
-        // sendText(id, msg.getText());
     }
 
     public void sendText(Long who, String what) {
@@ -79,7 +78,6 @@ public class WeatherBot extends TelegramLongPollingBot {
 
     private Text getTodayWeather(Long who, Message msg) throws IOException, InterruptedException {
         if (msg.hasText()) {
-
             String key = null;
             try (InputStream input = new FileInputStream("local.properties")) {
                 Properties prop = new Properties();
@@ -89,11 +87,9 @@ public class WeatherBot extends TelegramLongPollingBot {
                 ex.printStackTrace();
             }
 
-
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder(
                     URI.create("https://api.weatherapi.com/v1/forecast.json?q=Chartres%2CFR&days=1"))
-                    .header("aqi", "yes")
                     .header("key", key)
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
@@ -101,7 +97,15 @@ public class WeatherBot extends TelegramLongPollingBot {
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
 
+            JSONObject obj = new JSONObject(response.body());
             System.out.println(response.body());
+            System.out.println(obj);
+            JSONArray array = obj.getJSONArray("location");
+            List<String> list = new ArrayList<String>();
+
+            for (int i = 0; i < array.length(); i++) {
+                list.add(array.getJSONObject(i).getString("temp_c"));
+            }
         }
         return null;
     }
