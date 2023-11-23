@@ -18,7 +18,6 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.w3c.dom.Text;
 
-
 public class WeatherBot extends TelegramLongPollingBot {
 
     @Override
