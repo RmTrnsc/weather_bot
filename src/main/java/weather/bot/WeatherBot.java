@@ -7,8 +7,10 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Iterator;
 import java.util.Properties;
 
+import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -92,6 +94,24 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             HttpResponse<String> response = client.send(request,
                     HttpResponse.BodyHandlers.ofString());
+
+            JSONObject obj = new JSONObject(response.body());
+
+            // Retreive and display all JsonObject keys
+            // Iterator<String> keys = obj.keys();
+            // while (keys.hasNext()) {
+            // key = keys.next();
+            // if (obj.get(key) instanceof JSONObject) {
+            // System.out.println(key);
+            // }
+            // }
+
+            JSONObject locationObj = obj.getJSONObject("location");
+            JSONObject weatherObj = obj.getJSONObject("current");
+            JSONObject forecastObj = obj.getJSONObject("forecast");
+
+            String city = locationObj.getString("name");
+
         }
         return null;
     }
