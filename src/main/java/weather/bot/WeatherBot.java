@@ -62,6 +62,7 @@ public class WeatherBot extends TelegramLongPollingBot {
     public void sendText(Long who, String what) {
         SendMessage sm = SendMessage.builder()
                 .chatId(who.toString()) // Who are we sending a message to
+                .parseMode("Markdown")
                 .text(what).build(); // Message content
         try {
             execute(sm); // Actually sending the message
@@ -148,17 +149,17 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             String result = localtimeFormat + "\n"
                     + "Yo! \n"
-                    + "Voici la météo pour " + city + "\n"
-                    + "Condition => " + conditionText + " " + conditionIcon + "\n"
-                    + "Température => " + temperature + "C°, ressenti => " + feelslike + "C°\n"
-                    + "Vitesse du vent => " + windSpeed + "avec des rafales à," + gust
+                    + "Voici la météo pour *" + city + "*\n"
+                    + "*Condition => *" + conditionText + " " + conditionIcon + "\n"
+                    + "*Température => *" + temperature + "C°, ressenti => " + feelslike + "C°\n"
+                    + "*Vitesse du vent => *" + windSpeed + "avec des rafales à," + gust
                     + "kp/h direction => " + windDirection + "\n"
-                    + "Précipitaion mesurée => " + precipitationMM + "mm\n"
-                    + "Humidité => " + humidity + "%\n"
-                    + "Couverture nuageuse => " + cloudy + "%\n"
-                    + "Visibilité => " + visibility + "Km\n"
-                    + "Indice UV => " + uv + "\n"
-                    + "Dernière mise à jour " + lastUpdateFormat;
+                    + "*Précipitaion mesurée => *" + precipitationMM + "mm\n"
+                    + "*Humidité => *" + humidity + "%\n"
+                    + "*Couverture nuageuse => *" + cloudy + "%\n"
+                    + "*Visibilité => *" + visibility + "Km\n"
+                    + "*Indice UV => *" + uv + "\n"
+                    + "_Dernière mise à jour " + lastUpdateFormat + "_";
 
             sendText(who, result);
         }
