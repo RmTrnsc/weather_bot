@@ -7,9 +7,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Iterator;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+// import java.util.Iterator;
 import java.util.Properties;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.CopyMessage;
@@ -41,10 +46,14 @@ public class WeatherBot extends TelegramLongPollingBot {
         if (msg.isCommand()) {
             if (msg.getText().equals("/today"))
                 try {
-                    getTodayWeather(id, msg);
+                    sendTodayWeather(id, msg);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (ParseException e) {
                     e.printStackTrace();
                 }
         }
@@ -74,7 +83,8 @@ public class WeatherBot extends TelegramLongPollingBot {
         }
     }
 
-    private Text getTodayWeather(Long who, Message msg) throws IOException, InterruptedException {
+    private void sendTodayWeather(Long who, Message msg)
+            throws IOException, InterruptedException, JSONException, ParseException {
         if (msg.hasText()) {
             String key = null;
             try (InputStream input = new FileInputStream("local.properties")) {
@@ -87,7 +97,7 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder(
-                    URI.create("https://api.weatherapi.com/v1/forecast.json?q=Chartres%2CFR&days=1"))
+                    URI.create("https://api.weatherapi.com/v1/current.json?q=Chartres%2CFR&days=1&lang=fr"))
                     .header("key", key)
                     .method("GET", HttpRequest.BodyPublishers.noBody())
                     .build();
@@ -98,6 +108,7 @@ public class WeatherBot extends TelegramLongPollingBot {
             JSONObject obj = new JSONObject(response.body());
 
             // Retreive and display all JsonObject keys
+            // Uncomment Iterator import
             // Iterator<String> keys = obj.keys();
             // while (keys.hasNext()) {
             // key = keys.next();
@@ -108,12 +119,49 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             JSONObject locationObj = obj.getJSONObject("location");
             JSONObject weatherObj = obj.getJSONObject("current");
-            JSONObject forecastObj = obj.getJSONObject("forecast");
+            JSONObject conditionObj = weatherObj.getJSONObject("condition");
 
             String city = locationObj.getString("name");
 
+            String pattern = "dd/MM/yyyy HH:mm";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern, new Locale("fr", "FR"));
+            String localtimeFormat = simpleDateFormat.format(new Date());
+
+            String lastUpdate = weatherObj.getString("last_updated");
+            Date lastUpdateDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", new Locale("fr", "FR"))
+                    .parse(lastUpdate);
+            String lastUpdateFormat = simpleDateFormat.format(lastUpdateDateFormat);
+
+            Integer temperature = weatherObj.getInt("temp_c");
+            Integer feelslike = weatherObj.getInt("feelslike_c");
+            Integer windSpeed = weatherObj.getInt("wind_kph");
+            String windDirection = weatherObj.getString("wind_dir");
+            Integer gust = weatherObj.getInt("gust_kph");
+            Integer precipitationMM = weatherObj.getInt("precip_mm");
+            Integer humidity = weatherObj.getInt("humidity");
+            Integer cloudy = weatherObj.getInt("cloud");
+            Integer visibility = weatherObj.getInt("vis_km");
+            Integer uv = weatherObj.getInt("uv");
+
+            String conditionText = conditionObj.getString("text");
+            String conditionIcon = "<img src=" + '"' + "https:" + conditionObj.getString("icon") + '"' + "/>";
+
+            String result = localtimeFormat + "\n"
+                    + "Yo! \n"
+                    + "Voici la météo pour " + city + "\n"
+                    + "Condition => " + conditionText + " " + conditionIcon + "\n"
+                    + "Température => " + temperature + "C°, ressenti => " + feelslike + "C°\n"
+                    + "Vitesse du vent => " + windSpeed + "avec des rafales à," + gust
+                    + "kp/h direction => " + windDirection + "\n"
+                    + "Précipitaion mesurée => " + precipitationMM + "mm\n"
+                    + "Humidité => " + humidity + "%\n"
+                    + "Couverture nuageuse => " + cloudy + "%\n"
+                    + "Visibilité => " + visibility + "Km\n"
+                    + "Indice UV => " + uv + "\n"
+                    + "Dernière mise à jour " + lastUpdateFormat;
+
+            sendText(who, result);
         }
-        return null;
     }
 
 }
