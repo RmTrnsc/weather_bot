@@ -1,7 +1,9 @@
 package weather.bot;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -181,14 +183,15 @@ public class WeatherBot extends TelegramLongPollingBot {
         String iconString = splitStr[splitStr.length - 1];
 
         if (is_day == 1) {
-            System.out.println("resources/day/" + iconString);
-            BufferedImage img = ImageIO.read(getClass().getResource("{resources/day/}/{" +
-            iconString+"}"));
-            System.out.println(img);
+            File file = new File("src\\resources\\day\\" + iconString);
+            BufferedImage img = ImageIO.read(file);
+
             icon = new ImageIcon(img);
+            
         } else if (is_day == 0) {
-            BufferedImage img = ImageIO.read(getClass().getResource("resources/night/" +
-                    iconString));
+            File file = new File("src\\resources\\night\\" + iconString);
+            BufferedImage img = ImageIO.read(file);
+
             icon = new ImageIcon(img);
         } else {
             icon = null;
