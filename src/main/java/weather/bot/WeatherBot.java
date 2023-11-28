@@ -1,5 +1,7 @@
 package weather.bot;
 
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +15,9 @@ import java.util.Date;
 import java.util.Locale;
 // import java.util.Iterator;
 import java.util.Properties;
+
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -145,7 +150,10 @@ public class WeatherBot extends TelegramLongPollingBot {
             Integer uv = weatherObj.getInt("uv");
 
             String conditionText = conditionObj.getString("text");
-            String conditionIcon = "<img src=" + '"' + "https:" + conditionObj.getString("icon") + '"' + "/>";
+
+            ImageIcon conditionIcon = getWeatherIcon(
+                    conditionObj.getString("icon"),
+                    weatherObj.getInt("is_day"));
 
             String result = localtimeFormat + "\n"
                     + "Yo! \n"
@@ -163,6 +171,30 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             sendText(who, result);
         }
+    }
+
+    private ImageIcon getWeatherIcon(String iconText, Integer is_day) throws IOException {
+
+        ImageIcon icon;
+
+        String[] splitStr = iconText.split("[/]");
+        String iconString = splitStr[splitStr.length - 1];
+
+        if (is_day == 1) {
+            System.out.println("resources/day/" + iconString);
+            BufferedImage img = ImageIO.read(getClass().getResource("{resources/day/}/{" +
+            iconString+"}"));
+            System.out.println(img);
+            icon = new ImageIcon(img);
+        } else if (is_day == 0) {
+            BufferedImage img = ImageIO.read(getClass().getResource("resources/night/" +
+                    iconString));
+            icon = new ImageIcon(img);
+        } else {
+            icon = null;
+        }
+
+        return icon;
     }
 
 }
