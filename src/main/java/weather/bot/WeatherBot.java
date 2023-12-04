@@ -1,6 +1,7 @@
 package weather.bot;
 
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -131,14 +132,15 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             String city = locationObj.getString("name");
 
-            String pattern = "dd/MM/yyyy HH:mm";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern, new Locale("fr", "FR"));
-            String localtimeFormat = simpleDateFormat.format(new Date());
-
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", new Locale("fr", "FR"));
+            SimpleDateFormat simpleHourFormat = new SimpleDateFormat("HH:mm", new Locale("fr", "FR"));
+            String localDateFormat = simpleDateFormat.format(new Date());
+            String localTimeFormat = simpleHourFormat.format(new Date());
+            
             String lastUpdate = weatherObj.getString("last_updated");
             Date lastUpdateDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", new Locale("fr", "FR"))
                     .parse(lastUpdate);
-            String lastUpdateFormat = simpleDateFormat.format(lastUpdateDateFormat);
+            String lastUpdateTimeFormat = simpleHourFormat.format(lastUpdateDateFormat);
 
             Integer temperature = weatherObj.getInt("temp_c");
             Integer feelslike = weatherObj.getInt("feelslike_c");
@@ -153,51 +155,21 @@ public class WeatherBot extends TelegramLongPollingBot {
 
             String conditionText = conditionObj.getString("text");
 
-            ImageIcon conditionIcon = getWeatherIcon(
-                    conditionObj.getString("icon"),
-                    weatherObj.getInt("is_day"));
-
-            String result = localtimeFormat + "\n"
-                    + "Yo! \n"
-                    + "Voici la météo pour *" + city + "*\n"
-                    + "*Condition => *" + conditionText + " " + conditionIcon + "\n"
-                    + "*Température => *" + temperature + "C°, ressenti => " + feelslike + "C°\n"
+            String result = "Le " + localDateFormat + " à " + localTimeFormat + "\n"
+                    + "La météo pour *" + city + "*\n"
+                    + "*Condition => *" + conditionText + "\n"
+                    + "*Température => *" + temperature + "C°, *ressenti => *" + feelslike + "C°\n"
                     + "*Vitesse du vent => *" + windSpeed + "avec des rafales à," + gust
                     + "kp/h direction => " + windDirection + "\n"
-                    + "*Précipitaion mesurée => *" + precipitationMM + "mm\n"
+                    + "*Précipitaion mesurée => *" + precipitationMM + " mm\n"
                     + "*Humidité => *" + humidity + "%\n"
                     + "*Couverture nuageuse => *" + cloudy + "%\n"
                     + "*Visibilité => *" + visibility + "Km\n"
                     + "*Indice UV => *" + uv + "\n"
-                    + "_Dernière mise à jour " + lastUpdateFormat + "_";
+                    + "_Dernière mise à jour à " + lastUpdateTimeFormat + "_";
 
             sendText(who, result);
         }
-    }
-
-    private ImageIcon getWeatherIcon(String iconText, Integer is_day) throws IOException {
-
-        ImageIcon icon;
-
-        String[] splitStr = iconText.split("[/]");
-        String iconString = splitStr[splitStr.length - 1];
-
-        if (is_day == 1) {
-            File file = new File("src\\resources\\day\\" + iconString);
-            BufferedImage img = ImageIO.read(file);
-
-            icon = new ImageIcon(img);
-            
-        } else if (is_day == 0) {
-            File file = new File("src\\resources\\night\\" + iconString);
-            BufferedImage img = ImageIO.read(file);
-
-            icon = new ImageIcon(img);
-        } else {
-            icon = null;
-        }
-
-        return icon;
     }
 
 }
